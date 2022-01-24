@@ -1,0 +1,117 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+table3 %>% 
+  separate(rate, c("cases", "population"), sep = "/")
+```
+
+```{r}
+table3 %>% 
+  separate(rate, c("cases", "population"), sep = "/", remove = FALSE, convert = TRUE)
+```
+
+```{r}
+table6 <- ds4psy::table6
+table6
+```
+
+
+```{r}
+table6 %>% 
+  separate(when_what, c("var1", "var2"), sep = "_") %>% 
+  separate(var2, c("var3", "var4"), sep = "\\.")
+```
+
+```{r}
+table6 %>% 
+  separate(when_what, c("var1", "var2", "var3", "var4"))
+```
+
+```{r}
+tb5 <- tidyr::table5
+tb5
+tb5 %>% 
+  unite(yr, century, year, sep = "")
+```
+
+```{r}
+unite(tb5, "yr", century, year, sep = "")
+```
+
+```{r}
+tb5 %>% 
+  unite("yr", century, year, sep = "", remove = FALSE)
+```
+
+```{r}
+tb4a <- tidyr::table4a
+tb4a
+```
+
+
+```{r}
+tb4a %>% 
+  pivot_longer(2:3)
+```
+
+```{r}
+table2 %>% 
+  pivot_wider(names_from = type, values_from = count)
+```
+
+```{r}
+table2
+```
+
+```{r}
+table7 <- read_csv("http://rpository.com/ds4psy/data/table8.csv")
+table7
+```
+
+```{r}
+tb8 <- table7
+tb8
+```
+
+```{r}
+tb8 %>% 
+  pivot_longer(cases_1999:cases_2000, values_to = "cases") %>% 
+  separate(name, c("dummay", "year")) %>% 
+  pivot_longer(popu_1999:popu_2000, "dummy", "population") %>% 
+  select(-dummay, -dummy)
+```
+
+```{r}
+table8_tidy_4 <- table8 %>%
+  tidyr::pivot_longer(cols = cases_1999:popu_2000,
+                      names_to = c(".value", "year"),
+                      names_sep = "_")
+table8_tidy_4
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --------

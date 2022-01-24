@@ -1,0 +1,575 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# Load packages:
+library(knitr)
+library(rmarkdown)
+library(tidyverse)
+library(ds4psy)
+library(here)
+```
+
+
+```{r}
+# Load data files:
+
+# 1. Participant data: 
+posPsy_p_info <- ds4psy::posPsy_p_info  # from ds4psy package
+# posPsy_p_info_2 <- readr::read_csv(file = "http://rpository.com/ds4psy/data/posPsy_participants.csv")  # from csv file online
+# all.equal(posPsy_p_info, posPsy_p_info_2)
+
+# 2. Original DVs in long format:
+AHI_CESD <- ds4psy::posPsy_AHI_CESD  # from ds4psy package
+# AHI_CESD_2 <- readr::read_csv(file = "http://rpository.com/ds4psy/data/posPsy_AHI_CESD.csv")  # from csv file online
+# all.equal(AHI_CESD, AHI_CESD_2)
+
+# 3. Transformed and corrected version of all data (in wide format): 
+posPsy_wide <- ds4psy::posPsy_wide  # from ds4psy package 
+# posPsy_wide_2 <- readr::read_csv(file = "http://rpository.com/ds4psy/data/posPsy_data_wide.csv")  # from csv file online
+# all.equal(posPsy_wide, posPsy_wide_2)
+```
+
+
+```{r}
+# Customizations:
+# source(file = "my_custom_functions.R")  # load code from file
+
+# Custom colors:
+seeblau <- rgb(0, 169, 224, names = "seeblau", maxColorValue = 255)  # seeblau.4 of unikn package
+```
+
+
+```{r}
+?ds4psy::posPsy_AHI_CESD  # inspect the codebook
+```
+
+
+```{r}
+AHICESD <- ds4psy::posPsy_AHI_CESD
+df <- AHI_CESD
+
+dim(df)
+df
+```
+
+```{r}
+glimpse(df)
+```
+
+
+```{r}
+# Change some variables (into simpler types): 
+df$id <- as.integer(df$id)
+df$occasion <- as.integer(df$occasion)
+df$intervention <- as.integer(df$intervention)
+df
+```
+
+```{r}
+sum(!complete.cases(df))
+```
+
+
+```{r}
+# Create a df with NA values:
+set.seed(42) # for replicability
+nrows <- 6
+ncols <- 6
+
+# Make matrix:
+mx <- matrix(sample(c(1:12, -66, -77), nrows * ncols, replace = TRUE), nrows, ncols)
+
+## Make tibble (with valid column names):
+# tb <- tibble::as_tibble(mx, .name_repair = "minimal")  # make tibble 
+tb <- tibble::as_tibble(mx, .name_repair = "unique")  # make tibble 
+# tb <- tibble::as_tibble(mx, .name_repair = "universal")  # make tibble 
+# tb <- tibble::as_tibble(mx, .name_repair = make.names)   # make tibble 
+
+tb[tb > 9] <- NA # SET certain values to NA
+# tb
+```
+
+
+```{r}
+sum(is.na(tb))
+
+complete.cases(tb)
+tb
+sum(complete.cases(tb))
+which(complete.cases(tb))
+tb[complete.cases(tb), ]
+
+tb[is.na(tb)] <- -99
+tb
+```
+
+
+```{r}
+tb[tb == -99]
+```
+
+```{r}
+# How many participants are there for each occasion? 
+
+# Data:
+AHI_CESD <- ds4psy::posPsy_AHI_CESD  # from ds4psy package
+df <- AHI_CESD
+
+# (1) Table of grouped counts:
+# Using dplyr pipe: 
+id_by_occ <- df %>% 
+  group_by(occasion) %>%
+  count()
+id_by_occ
+#> # A tibble: 6 × 2
+#> # Groups:   occasion [6]
+#>   occasion     n
+#>      <dbl> <int>
+#> 1        0   295
+#> 2        1   147
+#> 3        2   157
+#> 4        3   139
+#> 5        4   134
+#> 6        5   120
+# (2) Plot count of IDs by occasion as bar plot:
+
+# (a) Using raw data as input:
+ggplot(df, aes(x = occasion)) +
+  geom_bar(fill = unikn::Seeblau) + 
+  labs(title = "Number of participants by occasion (from raw data)") +
+  ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+df %>% 
+  group_by(occasion) %>% 
+  count() %>% 
+  ggplot(aes(occasion, n)) +
+  geom_bar(stat = "identity")
+```
+
+```{r}
+occ_by_id <-
+  df %>% 
+  group_by(id) %>% 
+  count()
+occ_by_id
+```
+
+```{r}
+occ_by_id %>% 
+  arrange(desc(n)) %>% 
+  rowid_to_column() %>% 
+  #mutate(rowid = as.character(rowid)) %>% 
+  ggplot() +
+  geom_bar(aes(rowid, n), stat = "identity")
+```
+
+```{r}
+occ_by_id %>% 
+  ggplot(aes(reorder(id, -n), y = n)) +
+  geom_bar(stat = "identity")
+```
+
+```{r}
+df %>% 
+  group_by(id, occasion) %>% 
+  count() %>% 
+  filter(occasion == 0)
+  arrange(desc(n))
+```
+
+```{r}
+df %>% 
+  ggplot(aes(elapsed.days)) +
+  geom_histogram(binwidth = 1)
+```
+
+
+```{r}
+occ_days <- c(0, 7, 14, 38, 98, 189)
+names(occ_days) <- c("0: pre-test", "1: post-test",  # pre/post enrolment
+                     "2: 1-week",   "3: 1-month",    # 4 follow-ups
+                     "4: 3-months", "5: 6-months")
+
+ggplot(df, aes(x = elapsed.days)) +
+  geom_histogram(fill = unikn::Seeblau, binwidth = 1) +
+  geom_vline(xintercept = occ_days, color = "firebrick", linetype = 2) + 
+  labs(title = "Distribution of occasions (a: histogram)") +
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+# (b) frequency polygon:
+ggplot(df, aes(x = elapsed.days)) +
+  # geom_histogram(fill = unikn::Seeblau, binwidth = 1) +
+  geom_freqpoly(binwidth = 7, color = unikn::Seeblau) +
+  geom_vline(xintercept = occ_days, color = "firebrick", linetype = 2) + 
+  labs(title = "Distribution of occasions (b: frequency polygon)") +
+  ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+# Data:
+p_info <- ds4psy::posPsy_p_info  # from ds4psy package 
+dim(p_info)  # 295 x 6
+#> [1] 295   6
+```
+
+```{r}
+p_info
+```
+
+
+```{r}
+# Age range:
+range(p_info$age)
+#> [1] 18 83
+summary(p_info$age)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>   18.00   34.00   44.00   43.76   52.00   83.00
+# Histogramm showing the overall distribution of age 
+ggplot(p_info) +
+  geom_histogram(mapping = aes(age), binwidth = 2, fill = "gold", col = "black") +
+  labs(title = "Distribution of age values (overall)") + 
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+ggplot(p_info) +
+  geom_histogram(aes(age), binwidth = 5) +
+  facet_wrap(~intervention, nrow = 1)
+  #facet_grid(. ~ intervention)
+```
+
+```{r}
+p_info %>% 
+  filter(age > 70)
+
+p_info <- p_info %>% 
+  mutate(over_70 = (age > 70))
+p_info
+```
+
+
+```{r}
+# Age distribution of participants up to 70 (i.e., not over 70):
+p_info %>% 
+  filter(!over_70) %>%
+  ggplot() +
+  geom_histogram(mapping = aes(age), binwidth = 5, fill = unikn::Pinky, col = "black") +
+  labs(title = "Distribution of age values by intervention (without participants over 70)") +
+  facet_grid(.~intervention) + 
+  ds4psy::theme_ds4psy()  
+```
+
+```{r}
+df %>% 
+  ggplot(aes(ahiTotal, cesdTotal)) + 
+  geom_abline(intercept = 100, slope = -1) +
+  geom_point(alpha = 1/4)
+```
+
+```{r}
+df %>% 
+  ggplot(aes(ahiTotal, cesdTotal)) + 
+  geom_abline(intercept = 100, slope = -1) +
+  geom_point(alpha = 1/4) +
+  facet_wrap(~intervention)
+```
+
+```{r}
+id_by_occ
+#> # A tibble: 6 × 2
+#> # Groups:   occasion [6]
+#>   occasion     n
+#>      <dbl> <int>
+#> 1        0   295
+#> 2        1   147
+#> 3        2   157
+#> 4        3   139
+#> 5        4   134
+#> 6        5   120
+```
+
+```{r}
+# Line plot: Using id_by_occ (from above) as input: 
+line_dropouts <- ggplot(id_by_occ, aes(x = occasion)) +
+  geom_line(aes(y = n), size = 1.5, color = "gold") + 
+  geom_point(aes(y = n), shape = 21, size = 4, stroke = 1, color = "black", fill = "gold") + 
+  labs(title = "Number of participants per occasion (line)") +
+  ds4psy::theme_ds4psy()
+line_dropouts
+```
+
+```{r}
+# Multiple geoms: 
+# Bar + line plot: Using id_by_occ (from above) as input:  
+ggplot(id_by_occ, aes(x = occasion, y = n)) +
+  geom_bar(stat = "identity", fill = unikn::Seeblau) + 
+  geom_line(size = 1.5, color = "gold") + 
+  geom_point(shape = 21, size = 4, stroke = 1, color = "black", fill = "gold") + 
+  labs(title = "Number of participants per occasion (bar + line)") +
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+# Data:
+df <- AHI_CESD
+dim(df)  # 992 50
+#> [1] 992  50
+# df
+
+# Table 1: 
+# Frequency n, mean ahiTotal, and mean cesdTotal by occasion: 
+tab_scores_by_occ <- df %>%
+  group_by(occasion) %>%
+  summarise(n = n(),
+            ahiTotal_mn = mean(ahiTotal), 
+            cesdTotal_mn = mean(cesdTotal)
+            )
+knitr::kable(head(tab_scores_by_occ))
+```
+
+
+```{r}
+# Line graph of scores over occasions:
+plot_ahi_trend <- ggplot(tab_scores_by_occ, aes(x = occasion, y = ahiTotal_mn)) +
+  # geom_bar(aes(y = n), stat = "identity", fill = unikn::Seeblau) + 
+  geom_line(size = 1.5, color = unikn::Seegruen) + 
+  geom_point(shape = 21, size = 4, stroke = 1, color = "black", fill = unikn::Seegruen) + 
+  labs(title = "ahiTotal_mn by occasion (line)") +
+  ds4psy::theme_ds4psy()
+plot_ahi_trend
+```
+
+
+```{r}
+# Line graph with corrected y-scale:
+plot_ahi_trend + 
+  scale_y_continuous(limits = c(0, 80))
+```
+
+
+```{r}
+# Data:
+df <- AHI_CESD
+# dim(df)  # 992 50
+
+# Table 2: 
+# Scores (n, ahiTotal_mn, and cesdTotal_mn) by occasion AND intervention: 
+tab_scores_by_occ_iv <- df %>%
+  group_by(occasion, intervention) %>%
+  summarise(n = n(),
+            ahiTotal_mn = mean(ahiTotal), 
+            cesdTotal_mn = mean(cesdTotal)
+            )
+# dim(tab_scores_by_occ_iv)  # 24 x 5
+tab_scores_by_occ_iv
+```
+
+
+```{r}
+# Line graph of scores over occasions AND interventions:
+ggplot(tab_scores_by_occ_iv, aes(x = occasion, y = ahiTotal_mn, 
+                                 group = intervention)) +
+  geom_line(size = 1.5, color = unikn::Seegruen) + 
+  geom_point(shape = 21, size = 4, stroke = 1, color = "black", fill = unikn::Seegruen) + 
+  labs(title = "ahiTotal_mn by occasion and intervention (a: lines + points)") +
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+# Line graph of scores over occasions AND interventions:
+ggplot(tab_scores_by_occ_iv, aes(x = occasion, y = ahiTotal_mn, 
+                                 group = intervention, 
+                                 color = intervention, 
+                                 fill = intervention)) +
+  geom_line(size = 1.5) + 
+  geom_point(shape = 21, size = 4, stroke = 1, color = "black") + 
+  labs(title = "ahiTotal_mn by occasion and intervention (b: lines + points)") +
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+# Line graph of scores over occasions AND interventions:
+plot_ahi_by_occ_iv <- ggplot(tab_scores_by_occ_iv, 
+                             aes(x = occasion, y = ahiTotal_mn, 
+                                 group = intervention, 
+                                 color = factor(intervention), 
+                                 fill = factor(intervention))) +
+  geom_line(size = 1.5) + 
+  geom_point(shape = 21, size = 4, stroke = 1, color = "black") + 
+  labs(title = "ahiTotal_mn by occasion and intervention (c: lines + points, IVs by color)") +
+  ds4psy::theme_ds4psy()
+plot_ahi_by_occ_iv
+```
+
+```{r}
+# Line graph of scores over occasions AND interventions:
+plot_ahi_by_occ_iv + 
+  scale_y_continuous(limits = c(0, 80)) + 
+  scale_color_brewer(palette = "Set1") + 
+  scale_fill_brewer(palette = "Set1") + 
+  labs(title = "Mean ahiTotal scores by occasion and intervention (d)",
+       x = "Occasion", y = "Happiness (mean ahiTotal)", 
+       color = "Intervention:", fill = "Intervention:")
+```
+
+```{r}
+df %>% 
+  ggplot(aes(occasion, ahiTotal, group = id, color = factor(intervention))) +
+  geom_line(size = 1, alpha = 1/2) +
+  facet_wrap(~intervention)
+```
+```{r}
+# Data:
+df <- AHI_CESD
+dim(df)  # 992 50
+#> [1] 992  50
+# df
+
+
+library(ds4psy)
+# Individual trends of ahiTotal by occasion and intervention: 
+ggplot(df, aes(x = occasion, y = ahiTotal, group = id, color = factor(intervention))) +
+  geom_line(size = 1, alpha = 1/2) + 
+  facet_wrap(~intervention) +
+  labs(title = "Individual's happiness by occasion for each intervention", 
+       color = "Intervention:") +
+  # scale_color_brewer(palette = "Set1") +
+  scale_color_manual(values = unikn::usecol(c(Seeblau, Pinky, Peach, Seegruen))) + 
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+library(unikn)
+# Individual trends of ahiTotal by elapsed.days and intervention: 
+ggplot(df, aes(x = elapsed.days, y = ahiTotal, group = id, color = factor(intervention))) +
+  geom_line(size = 1, alpha = 1/2) + 
+  facet_wrap(~intervention) +
+  labs(title = "Individual's happiness by elapsed.days for each intervention",
+       color = "Intervention:") +
+  scale_color_manual(values = usecol(c(Seeblau, Pinky, Peach, Seegruen))) +
+    ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+## Data:
+# df <- AHI_CESD
+# dim(df)  # 992 50
+# df
+
+# (a) Jitterplot:
+ggplot(df) +
+  geom_jitter(aes(x = intervention, y = ahiTotal), width = .1, size = 2, alpha = 1/4) + 
+  labs(title = "Happiness values by intervention (a: jitter)", 
+       x = "intervention", y = "ahiTotal") +
+    ds4psy::theme_ds4psy()
+```
+
+```{r}
+# (b) Box plot:
+ggplot(df) +
+  geom_boxplot(aes(x = factor(intervention), y = ahiTotal), color = unikn::Seeblau, fill = "grey95") + 
+  labs(title = "Values of ahiTotal by intervention (b: boxplot)", 
+       x = "intervention", y = "ahiTotal") +
+  ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+# (c) Violin plot:
+ggplot(df) +
+  geom_violin(aes(x = factor(intervention), y = ahiTotal), size = 1.5, color = unikn::Seeblau, fill = "whitesmoke") + 
+  labs(title = "Values of ahiTotal by intervention (c: violin)", 
+       x = "intervention", y = "ahiTotal") +
+  ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+# (d) Combining jitter with boxplot:
+ggplot(df) +
+  geom_boxplot(aes(x = factor(intervention), y = ahiTotal), color = unikn::Seeblau, fill = "grey95", alpha = 1) + 
+  geom_jitter(aes(x = intervention, y = ahiTotal), width = .1, size = 2, alpha = 1/4) + 
+  labs(title = "Values of ahiTotal by intervention (d: jittered boxes)", 
+       x = "intervention", y = "ahiTotal") +
+    ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+# (e) Combining violin plot with jitter:
+ggplot(df) +
+  
+  geom_violin(aes(x = factor(intervention), y = ahiTotal), size = 1.5, color = unikn::Seeblau) +
+  geom_jitter(aes(x = intervention, y = ahiTotal), width = .1, size = 2, alpha = 1/4) + 
+    geom_boxplot(aes(x = factor(intervention), y = ahiTotal), color = unikn::Seeblau, fill = "grey95", alpha = .5) + 
+  labs(title = "Values of ahiTotal by intervention (e: jittered violins)", 
+       x = "intervention", y = "ahiTotal") +
+  ds4psy::theme_ds4psy()
+```
+
+```{r}
+# (f) Combining violin plot with boxplot and jitter:
+ggplot(df, aes(x = factor(intervention), y = ahiTotal, color = factor(intervention))) +
+  geom_violin(size = 1.5, color = unikn::Seeblau) +
+  geom_boxplot(width = .30, color = "grey20", fill = "grey90") + 
+  geom_jitter(width = .05, size = 2, alpha = 1/3) + 
+  labs(title = "Values of ahiTotal by intervention (f: jittered violins with boxes)", 
+       x = "intervention", y = "ahiTotal", color = "Intervention:") + 
+  # scale_color_brewer(palette = "Set1") + 
+  scale_color_manual(values = usecol(c(Pinky, Karpfenblau, Petrol, Bordeaux))) +
+  ds4psy::theme_ds4psy()
+```
+
+
+```{r}
+# Tile plot 1: 
+# Frequency (n) of each interventin by occasion:
+ggplot(tab_scores_by_occ_iv, aes(x = occasion, y = intervention)) +
+  geom_tile(aes(fill = n), color = "black") + 
+  geom_text(aes(label = n), color = "white") +
+  labs(title = "Frequency of interventions by occasion (tile)", 
+       x = "Occasion", y = "Intervention", fill = "Frequency:") + 
+  theme_ds4psy(col_brdrs = "grey")
+```
+
+
+```{r}
+# Tile plot 2: 
+# ahiTotal_mn of each interventin by occasion:
+ggplot(tab_scores_by_occ_iv, aes(x = occasion, y = intervention)) +
+  geom_tile(aes(fill = ahiTotal_mn), color = "black") + 
+  labs(title = "Mean ahiTotal score of each intervention by occasion (tile)", 
+       x = "Occasion", y = "Intervention", fill = "ahiTotal_mn:") + 
+  scale_fill_gradient(low = unikn::Bordeaux, high = "gold") +
+  theme_ds4psy(col_brdrs = "grey")
+```
+
+```{r}
+# Data:
+df <- AHI_CESD  # copy 
+# dim(df)  # 992 50
+# df
+
+# Point size plot 1a:
+# Count frequency of values for each interventin by occasion:
+ggplot(df, aes(x = occasion, y = intervention)) +
+  geom_count(color = unikn::Seeblau) + 
+  labs(title = "Frequency of interventions by occasion (count)", 
+       x = "Occasion", y = "Intervention", size = "Count:") + 
+  scale_size_area(max_size = 12) +
+  scale_y_continuous(limits = c(.5, 4.5)) + 
+  unikn::theme_unikn()
+```
+
+
+

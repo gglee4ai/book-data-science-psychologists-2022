@@ -1,0 +1,131 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+my_wd <- getwd()
+my_wd
+```
+
+
+```{r}
+list.files()
+```
+
+
+```{r}
+library(here)
+
+here()
+here("_book", "images")
+```
+
+
+```{r}
+here::i_am("test.R")
+```
+
+```{r}
+v1 <- parse_logical(c("TRUE", "FALSE", "NA", "TRUE"))
+v1
+str(v1)
+
+v2 <- parse_integer(c("1", "2", "3", "NA", "5"))
+v2
+str(v2)
+
+v3 <- parse_double(c("1.1", "2.2", "3.15", "NA"))
+v3
+str(v3)
+
+v4 <- parse_date(c("2019-06-03", "2019-12-24", "NA", "2019-12-31"))
+v4
+str(v4)
+```
+
+
+```{r}
+v5 <- parse_integer(c("12", "34", "?", "78"), na = "?")
+v5
+```
+
+```{r}
+v5 <- parse_integer(c("12", "34", "xy", "78"))
+v5
+problems(v5)
+```
+
+```{r}
+#parse_double(c("1,23", "3,14"))
+parse_double(c("1,23", "3,14"), locale = locale(decimal_mark = ",")) 
+```
+
+
+```{r}
+# Used in the US: 
+parse_number("$1,000.99")
+#> [1] 1000.99
+# Used in Germany (and the EU): 
+parse_number("EUR1.000,99", locale = locale(decimal_mark = ",", grouping_mark = "."))
+#> [1] 1000.99
+# Used in Switzerland:
+parse_number("CHF1'000,99", locale = locale(decimal_mark = ",", grouping_mark = "'"))
+#> [1] 1000.99
+```
+
+
+```{r}
+parse_character(c("très difficile", "mon chérie"), 
+                locale = locale(encoding = "UTF-8"))
+```
+
+
+```{r}
+parse_character("\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd", 
+                locale = locale(encoding = "Shift-JIS"))
+```
+
+```{r}
+french <- "très difficile"
+parse_character(french, locale = locale(encoding = "UTF-8"))
+guess_encoding(charToRaw("très difficile"))
+```
+
+```{r}
+treatments <- c("therapy", "medication", "placebo")  # define factor levels
+
+parse_factor(c("medication", "placebo", "therapy", "medication"), levels = treatments)
+```
+
+
+```{r}
+Sys.Date()
+Sys.time()
+parse_date(c("2020-02-29", "2020-12-24", "2020-12-31"))
+parse_datetime("2020-02-29 07:38:01", locale = locale("de"))
+parse_datetime("2022-01-24 19:35:16", locale = locale(tz = 'Asia/Seoul'))
+```
+
+
+```{r}
+my_file_path <- "http://rpository.com/ds4psy/data/data_2.dat"
+data_2 <- read_fwf(my_file_path, 
+                   fwf_cols(initials = c(1, 2), 
+                            age = c(4, 5), 
+                            tel = c(7, 10), 
+                            pwd = c(12, 17)))
+glimpse(data_2)
+```
+
+
+
+
+
+
+
+
+
+
+
+# ----------

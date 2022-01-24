@@ -1,0 +1,32 @@
+---
+title: "Chapter 3: Data transformation"
+author: "Your name"
+date: "2022 January 12"
+output: html_document
+---
+
+Add text or code chunks here.
+
+
+
+```{r}
+sw %>% 
+  filter(between(height, 150, 165))
+```
+
+```{r}
+sw %>% 
+  filter(is.na(gender))
+```
+
+
+
+# Exercises (03: Data transformation)
+  
+## Exercise 1
+  
+## Exercise 2
+  
+etc. 
+  
+<!-- The end (eof). -->
