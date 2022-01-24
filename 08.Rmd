@@ -3,3 +3,120 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+```{r}
+# Data:
+data_t1 <- ds4psy::data_t1  # from ds4psy package
+data_t2 <- ds4psy::data_t2  # from ds4psy package
+
+# Copy data:
+t1 <- data_t1
+t2 <- data_t2
+
+# Inspect data:
+head(t1)
+#> # A tibble: 6 × 4
+#>   name  gender like_1 bnt_1
+#>   <chr> <chr>   <dbl> <dbl>
+#> 1 R.S.  female      2    NA
+#> 2 M.Y.  male        2     4
+#> 3 K.R.  male        4     1
+#> 4 A.V.  female      3     2
+#> 5 Z.Y.  female     NA    NA
+#> 6 X.D.  female      4     4
+head(t2)
+#> # A tibble: 6 × 4
+#>   name  gender like_2 bnt_2
+#>   <chr> <chr>   <dbl> <dbl>
+#> 1 X.D.  female      5     1
+#> 2 T.D.  male        3    NA
+#> 3 Z.D.  male        7     4
+#> 4 L.S.  male        7     4
+#> 5 H.V.  female      5     2
+#> 6 Q.N.  female      6     2
+```
+
+
+
+```{r}
+names(t1)[(names(t1) %in% names(t2))]
+```
+
+```{r}
+t1 <- t1 %>% arrange(name, gender)
+t2 <- t2 %>% arrange(name, gender)
+```
+
+
+```{r}
+m1 <- left_join(t1, t2)
+m2 <- right_join(t1, t2)
+all.equal(m1, m2)
+```
+
+
+```{r}
+left_join(t1, t2, by = "name", suffix = c("_001", "_002"))
+```
+
+```{r}
+t3 <- t1
+t4 <- t2
+
+set.seed(12)
+n <- 8
+# s1 <- sample(1:nrow(t3), size = n, replace = FALSE)
+# s2 <- sample(1:nrow(t4), size = n, replace = FALSE)
+
+t3 <- t3 %>% 
+  sample_n(n) %>% 
+  arrange(name, gender)
+t4 <- t4 %>% 
+  sample_n(n) %>% 
+  arrange(name, gender)
+```
+
+
+```{r}
+t3$name[!t3$name %in% t4$name]
+```
+
+
+```{r}
+t3 %>% left_join(t4)
+t3 %>% right_join(t4)
+t3 %>% full_join(t4)
+t3 %>% inner_join(t4)
+```
+
+```{r}
+t3 %>% right_join(t4)
+```
+
+```{r}
+t3 %>% anti_join(t4)
+```
+
+
+```{r}
+sw <- dplyr::starwars %>%
+  select(name:species)  # only first 10 columns of starwars
+sw
+
+s1 <- sw %>% filter(species == "Human", height < 180)
+s1
+
+s2 <- sw %>% filter(homeworld == "Naboo" | homeworld == "Tatooine")
+s2  # 21 individuals
+```
+
+
+```{r}
+union(s1, s2)
+```
+
+
+
+
+
+
+# --------
