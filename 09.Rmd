@@ -1,0 +1,437 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ds4psy)
+```
+
+
+
+```{r}
+a <- "Hello"
+b <- '!'
+c <- "This is a sentence."
+d <- "The word 'word' is a 4-letter word."
+
+typeof(a)
+mode(a)
+```
+
+```{r}
+k1 <- "Hansjörg says: 'Der Käsereichtum Österreichs ist ungewöhnlich groß.'"
+k1
+```
+
+
+```{r}
+"\u00F6"
+"\u221E"
+```
+
+```{r}
+k2 <- "Hansj\u00F6rg says: 'Der K\u00E4sereichtum \u00D6sterreichs ist ungew\u00F6hnlich gro\u00DF.'"
+k2
+```
+
+```{r}
+names(Umlaut)
+```
+
+```{r}
+# Greek letters:
+"\u03B1/\u0391"  # alpha
+#> [1] "α/Α"
+"\u03B2/\u0392"  # beta
+#> [1] "β/Β"
+"\u03B3/\u0393"  # gamma
+#> [1] "γ/Γ"
+"\u03B4/\u0394"  # delta
+#> [1] "δ/Δ"
+"\u03B5/\u0395"  # epsilon
+#> [1] "ε/Ε"
+"\u03C6/\u03A6"  # phi
+#> [1] "φ/Φ"
+"\u03C7/\u03A7"  # chi
+#> [1] "χ/Χ"
+"\u03C8/\u03A8"  # psi
+#> [1] "ψ/Ψ"
+"\u03C9/\u03A9"  # omega
+#> [1] "ω/Ω"
+"\u03C3/\u03A3"  # sigma
+#> [1] "σ/Σ"
+```
+
+```{r}
+# Card suits:
+"\u2660/\u2664"
+#> [1] "♠/♤"
+"\u2665/\u2661"
+#> [1] "♥/♡"
+"\u2666/\u2662"
+#> [1] "♦/♢"
+"\u2663/\u2667"
+#> [1] "♣/♧"
+```
+
+```{r}
+# dice:
+"\u2680"   # dice 1
+#> [1] "⚀"
+"\u2681"   # dice 2
+#> [1] "⚁"
+"\u2682"   # dice 3
+#> [1] "⚂"
+"\u2683"   # dice 4
+#> [1] "⚃"
+"\u2684"   # dice 5
+#> [1] "⚄"
+"\u2685"   # dice 6
+#> [1] "⚅"
+```
+
+```{r}
+# Dashes:
+"\u2013"  # en dash
+#> [1] "–"
+"\u2014"  # em dash
+#> [1] "—"
+"\u2015"  # horizontal bar
+#> [1] "―"
+```
+
+
+```{r}
+# Emoticons:
+"\U1F642"  # slightly smiling face
+#> [1] "\U0001f642"
+"\U1F605"  # laugh with tear 
+#> [1] "\U0001f605"
+"\U1F63E"  # pouting cat face
+#> [1] "\U0001f63e"
+"\U1F607"  # smiling with halo
+#> [1] "\U0001f607"
+"\U1F631"  # face screaming in fear
+#> [1] "\U0001f631"
+```
+
+
+```{r}
+#knitr::asis_output("Dashes: \U2013 \U2014 \U2015")
+#knitr::asis_output("Emoticons: \U1F642 \U1F605 \U1F63E \U1F607 \U1F631")
+```
+
+
+```{r}
+metachar
+```
+
+
+```{r}
+writeLines(paste(metachar, collapse = " "))
+```
+
+```{r}
+LETTERS
+letters
+month.abb
+month.name
+```
+
+```{r}
+v1 <- c(c, d)
+v1
+```
+
+
+```{r}
+length(v1)
+rev(v1)
+sum(v1)
+```
+
+```{r}
+nchar(v1)
+v1[2]
+```
+
+```{r}
+character(4)
+```
+
+
+```{r}
+matrix(month.abb, ncol = 3, byrow = TRUE)
+```
+
+
+```{r}
+tibble::tibble(participant = LETTERS,  
+               initials = paste0(sample(LETTERS), ".", sample(LETTERS), "."),
+               age = sample(18:30, size = length(LETTERS), replace = TRUE),
+               may_drink = (age > 20))
+```
+
+```{r}
+length("Hello")
+nchar("Hello")
+str_length("Hello")
+```
+
+```{r}
+str_length(month.name)
+```
+
+```{r}
+s <- "a tiny dog chased a large rat."
+capitalize(s, n = 10, as_text = FALSE)
+```
+
+```{r}
+paste(a, b)
+c(a, b)
+```
+
+
+```{r}
+paste(a, b)
+#> [1] "Hello !"
+paste(a, b, sep = " ")
+#> [1] "Hello !"
+paste(a, b, sep = "<--->")
+#> [1] "Hello<--->!"
+#> 
+#> paste0(a, b)
+#> [1] "Hello!"
+paste(a, b, sep = "")
+#> [1] "Hello!"
+```
+
+
+```{r}
+paste(letters[1:3], collapse = "-")
+paste("a", "b", "c", collapse = "|")
+paste(c("a", "b", "c"), sep = "_", collapse = "|")
+
+```
+
+```{r}
+paste("n", 1:10, sep = "_")
+paste(LETTERS[1:3], 1:10, sep = "_")
+```
+
+
+```{r}
+str_c(a, b, sep = " ")
+str_c("a", "b", "c", sep = "_", collapse = "|")
+str_c(c("a", "b", "c"), "!", sep = "_", collapse = "|")
+```
+
+
+```{r}
+v <- letters[1:3]
+v
+x <- paste(v, collapse = " ")
+x
+y <- strsplit(x, split = " ")
+all.equal(v, unlist(y))
+```
+
+```{r}
+s1 <- c("This is the first sentence.", 
+        "Yet another short sentence.", 
+        "A third and final sentence.")
+strsplit(s1, split = " ")
+
+p <- paste(s1, collapse = " ")
+p
+```
+
+
+```{r}
+s2 <- unlist(strsplit(p, split = "\\.|\\.."))
+s2
+```
+
+
+```{r}
+s2 <- unlist(strsplit(p, split = "[[:punct:]]|[[:punct:]] "))
+s2
+```
+
+
+```{r}
+p <- c("This is a paragraph. A second sentence here.", 
+       "A third sentence, etc., as another string.",
+       "A question? The end, finally!")
+
+ds4psy::text_to_sentences(p)
+#> [1] "This is a paragraph."                      
+#> [2] "A second sentence here."                   
+#> [3] "A third sentence, etc., as another string."
+#> [4] "A question?"                               
+#> [5] "The end, finally!"
+ds4psy::text_to_words(p)
+```
+
+```{r}
+x  # from above
+#> [1] "a b c"
+y <- stringr::str_split(x, pattern = " ")
+y
+#> [[1]]
+#> [1] "a" "b" "c"
+unlist(y)
+#> [1] "a" "b" "c"
+```
+
+
+
+```{r}
+f <- c("Banana", "Lemon", "Apple", "Zucchini", "Cucumber")
+sort(f)
+sort(f, decreasing = TRUE)
+```
+
+```{r}
+order(f)
+order(f, decreasing = TRUE)
+```
+
+
+```{r}
+f[order(f)]
+f[order(f, decreasing = TRUE)]
+```
+
+```{r}
+a
+#> [1] "Hello"
+# Extracting substrings: 
+substr(x = a, start = 1, stop = 4)
+#> [1] "Hell"
+substr(x = a, start = 4, stop = 5)
+#> [1] "lo"
+```
+
+
+```{r}
+w <- c("a", "big", "coconut", "does", "exist", ".")
+
+substr(w, -2,  1)  # start < 0
+#> [1] "a" "b" "c" "d" "e" "."
+substr(w,  2, 99)  # stop > nchar(w)
+#> [1] ""       "ig"     "oconut" "oes"    "xist"   ""
+substr(w,  2,  1)  # start > stop
+#> [1] "" "" "" "" "" ""
+```
+
+```{r}
+w <- c("a", "big", "coconut", "does", "exist", ".")
+
+substr(w, -2,  1)  # start < 0
+#> [1] "a" "b" "c" "d" "e" "."
+substr(w,  2, 99)  # stop > nchar(w)
+#> [1] ""       "ig"     "oconut" "oes"    "xist"   ""
+substr(w,  2,  1)  # start > stop
+#> [1] "" "" "" "" "" ""
+```
+
+```{r}
+s
+#> [1] "A tiny dog chased a large rat." "Is POTUS mad?"                 
+#> [3] "Big dad, so sad!"
+# last 4 characters: 
+substr(s, nchar(s) - 3, nchar(s))
+#> [1] "rat." "mad?" "sad!"
+```
+
+
+
+# 9.4 
+
+
+```{r}
+# (1) Define some data: ----
+s <- c("The cat sat on the mat.", 
+       "The mad hatter had heard her, so what?", 
+       "The fat dad was so sad.")
+
+# (2) from ds4psy: ------ 
+
+# (a) words: ---- 
+fruits <- ds4psy::fruits
+# length(fruits)  # 122
+countries <- ds4psy::countries
+# length(countries)  # 197
+Trumpisms <- ds4psy::Trumpisms
+# length(Trumpisms)  # 96
+
+# (b) sentences: ---- 
+flowery <- ds4psy::flowery
+# length(flowery)  # 60
+Bushisms <- ds4psy::Bushisms 
+# length(Bushisms)  # 22
+
+# (3) from stringr: ------ 
+
+words <- stringr::words
+# length(words)  # 980
+sentences <- stringr::sentences
+# length(sentences)  # 720
+```
+
+
+```{r}
+str_view(s, pattern = "at")
+```
+
+
+```{r}
+str_view_all(s, pattern = "at")
+```
+```{r}
+p <- "\\b[:alpha:]{3}\\b"
+```
+
+
+```{r}
+str_view_all(s, regex(p))
+```
+
+```{r}
+str_view_all(s, boundary("word"))
+```
+
+```{r}
+str_view_all("Abra CAD abrA", "A")
+str_view_all("Abra CAD abrA", regex("A", ignore_case = TRUE))
+```
+
+
+```{r}
+p <- "hat"
+grep(p, s, value = TRUE)
+str_view_all(s, p, match = TRUE)
+```
+
+
+```{r}
+str_detect(s, "hat")
+```
+
+
+```{r}
+sum(str_detect(fruits, "(.)\\1"))
+```
+
+
+
+
+
+
+
+
+# -------
