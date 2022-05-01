@@ -1,3 +1,8 @@
-# study-ds4psy
+# study-data-science-psychologists-2022
 
-A line I wrote on my local computer 
+## Data Science for Psychologists
+
+- author: Hansjörg Neth
+- date: 2022-04-08
+
+https://bookdown.org/hneth/ds4psy/
